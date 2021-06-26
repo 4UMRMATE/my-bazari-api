@@ -20,15 +20,20 @@ export const getProfile = async (req, res) => {
 };
 
 export const addProfile = async (req, res) => {
-  const profile = req.body;
+  let profile = await Profiles.find({ googleId: req.body.googleId });
 
-  const newProfile = new Profiles(profile);
+  if (profile) {
+    res.status(409).json({ message: "User already exists." });
+  } else {
+    profile = req.body;
+    const newProfile = new Profiles(profile);
 
-  try {
-    await newProfile.save();
+    try {
+      await newProfile.save();
 
-    res.status(201).json(newProfile);
-  } catch (error) {
-    res.status(409).json({ message: error.message });
+      res.status(201).json(newProfile);
+    } catch (error) {
+      res.status(409).json({ message: error.message });
+    }
   }
 };
