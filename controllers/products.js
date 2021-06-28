@@ -1,8 +1,15 @@
 import Products from "../models/addProduct.js";
 
 export const getProducts = async (req, res) => {
+  let { name } = req.query;
+  let products = [];
   try {
-    const products = await Products.find();
+    if (name) {
+      let nameExp = new RegExp(name, "gi");
+      products = await Products.find({ name: { $regex: nameExp } });
+    } else {
+      products = await Products.find();
+    }
     res.status(200).json(products);
   } catch (error) {
     res.status(404).json({ message: error.message });
