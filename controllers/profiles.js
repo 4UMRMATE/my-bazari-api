@@ -12,7 +12,7 @@ export const getProfiles = async (req, res) => {
 export const getProfile = async (req, res) => {
   let id = req.params.id;
   try {
-    const profile = await Profiles.find({ googleId: id });
+    const profile = await Profiles.find({ googleId: id }).select("-__v -_id");
     res.status(200).json(profile);
   } catch (error) {
     res.status(404).json({ message: error.message });

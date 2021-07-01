@@ -1,16 +1,41 @@
 import Products from "../models/addProduct.js";
 
+let total = 0;
+const PAGE_SIZE = 6;
+// pages = 0,
+// page = 1;
+
 export const getProducts = async (req, res) => {
   let { name } = req.query;
+  let page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
   let products = [];
   try {
     if (name) {
       let nameExp = new RegExp(name, "gi");
-      products = await Products.find({ name: { $regex: nameExp } });
+      total = await Products.countDocuments({ name: { $regex: nameExp } });
+      products = await Products.find({ name: { $regex: nameExp } })
+        .limit(PAGE_SIZE)
+        .skip(PAGE_SIZE * (page - 1))
+        .select("-__v");
     } else {
-      products = await Products.find();
+      total = await Products.countDocuments({});
+      products = await Products.find()
+        .limit(PAGE_SIZE)
+        .skip(PAGE_SIZE * (page - 1))
+        .select("-__v");
     }
-    res.status(200).json(products);
+    res.status(200).json({
+      code: 200,
+      meta: {
+        pagination: {
+          total: total,
+          pages: Math.ceil(total / PAGE_SIZE),
+          page: page,
+          limit: PAGE_SIZE,
+        },
+      },
+      data: products,
+    });
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
