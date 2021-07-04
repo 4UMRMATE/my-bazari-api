@@ -2,11 +2,9 @@ import Products from "../models/addProduct.js";
 
 let total = 0;
 const PAGE_SIZE = 6;
-// pages = 0,
-// page = 1;
 
 export const getProducts = async (req, res) => {
-  let { name } = req.query;
+  let { name, limit } = req.query;
   let page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
   let products = [];
   try {
@@ -14,7 +12,7 @@ export const getProducts = async (req, res) => {
       let nameExp = new RegExp(name, "gi");
       total = await Products.countDocuments({ name: { $regex: nameExp } });
       products = await Products.find({ name: { $regex: nameExp } })
-        .limit(PAGE_SIZE)
+        .limit(parseInt(limit) ? parseInt(limit) : PAGE_SIZE)
         .skip(PAGE_SIZE * (page - 1))
         .select("-__v");
     } else {
@@ -31,7 +29,7 @@ export const getProducts = async (req, res) => {
           total: total,
           pages: Math.ceil(total / PAGE_SIZE),
           page: page,
-          limit: PAGE_SIZE,
+          limit: parseInt(limit) ? parseInt(limit) : PAGE_SIZE,
         },
       },
       data: products,
